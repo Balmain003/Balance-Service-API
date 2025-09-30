@@ -1,0 +1,15 @@
+basePath: /
+host: localhost:8081
+info:
+  contact:
+    email: support@balance-service.com
+    name: API Support
+  description: Микросервис для работы с балансом пользователей
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Balance Service API
+  version: "1.0"
+paths: {}
+swagger: "2.0"
