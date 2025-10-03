@@ -1,3 +1,4 @@
+// internal/reservations/handler.go
 package reservations
 
 import (
@@ -35,7 +36,7 @@ func NewReservationsHandler(router *http.ServeMux, deps ReserveHandlerDeps) {
 // @Accept json
 // @Produce json
 // @Param input body ReserveRequest true "Данные для резервирования"
-// @Success 200 {object} ReserveResponese "Результат резервирования"
+// @Success 200 {object} ReserveResponse "Результат резервирования"
 // @Failure 400 {string} string "Некорректные данные для резервирования"
 // @Router /reserve [post]
 func (handler *ReserveHandler) Reservation() http.HandlerFunc {
@@ -64,7 +65,7 @@ func (handler *ReserveHandler) Reservation() http.HandlerFunc {
 			return
 		}
 		res.Json(w, "Резрвирование средств произошло успешно! Данные по резервированию", http.StatusOK)
-		res.Json(w, ReserveResponese{
+		res.Json(w, ReserveResponse{
 			ID:         reservation.ID,
 			UserId:     reservation.UserId,
 			OrderId:    reservation.OrderId,

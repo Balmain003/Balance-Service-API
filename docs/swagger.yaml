@@ -1,4 +1,148 @@
 basePath: /
+definitions:
+  internal_history.Transaction:
+    properties:
+      amount:
+        type: number
+      created_at:
+        type: string
+      description:
+        type: string
+      from_user_id:
+        type: integer
+      id:
+        type: integer
+      order_id:
+        type: integer
+      related_id:
+        type: integer
+      service_id:
+        type: integer
+      to_user_id:
+        type: integer
+      type:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  internal_history.TransactionHistoryResponse:
+    properties:
+      current_page:
+        description: Текущая страница
+        type: integer
+      page_size:
+        type: integer
+      total_count:
+        description: Общее количесво
+        type: integer
+      total_pages:
+        description: Общее количество страниц
+        type: integer
+      transactions:
+        description: Слайс представляющий информацию
+        items:
+          $ref: '#/definitions/internal_history.Transaction'
+        type: array
+    type: object
+  internal_reservations.ReserveRequest:
+    description: Запрос для резервирования средств перед оплатой
+    properties:
+      amount:
+        description: Сумма которая резервируется
+        type: number
+      order_id:
+        description: ID заказа
+        type: integer
+      service_id:
+        description: ID услуги
+        type: integer
+      user_id:
+        description: ID пользователя
+        type: integer
+    type: object
+  internal_reservations.ReserveResponse:
+    description: Ответ с данными о резервировании средств
+    properties:
+      amount:
+        description: Сумма которая резервируется
+        type: number
+      id:
+        description: ID резервации
+        type: integer
+      new_balance:
+        description: Обновленый баланс пользователя после списания средств
+        type: number
+      order_id:
+        description: ID заказа
+        type: integer
+      service_id:
+        description: ID услуги
+        type: integer
+      status:
+        description: Статус
+        type: string
+      user_id:
+        description: ID пользователя
+        type: integer
+    type: object
+  internal_stat.ReportResponse:
+    properties:
+      file_name:
+        description: Название файла
+        type: string
+      message:
+        description: Сообщение
+        type: string
+      report_url:
+        description: Путь
+        type: string
+    type: object
+  internal_user.AddBalanceRequest:
+    description: Запрос для пополнения баланса пользователя
+    properties:
+      amount:
+        description: Сумма пополнения
+        type: number
+      user_id:
+        description: ID пользователя
+        type: integer
+    type: object
+  internal_user.ErrorResponse:
+    description: Стандартный ответ при возникновении ошибки
+    properties:
+      error:
+        example: Описание ошибки
+        type: string
+    type: object
+  internal_user.TransferRequest:
+    description: Запрос для перевода средств между пользователями
+    properties:
+      amount:
+        description: Сумма пополнения
+        type: number
+      from_user_id:
+        description: Имя пользователя отправителя
+        type: integer
+      to_user_id:
+        description: Имя пользователя получателя
+        type: integer
+    type: object
+  internal_user.User:
+    properties:
+      balance:
+        type: number
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  internal_user.UserCreateRequest:
+    description: Запрос для создания нового пользователя
+    properties:
+      name:
+        description: Имя пользователя
+        type: string
+    type: object
 host: localhost:8081
 info:
   contact:
@@ -11,5 +155,260 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Balance Service API
   version: "1.0"
-paths: {}
+paths:
+  /balance:
+    patch:
+      consumes:
+      - application/json
+      description: Зачисление средств на баланс пользователя
+      parameters:
+      - description: Данные для пополнения баланса
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_user.AddBalanceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Данные пользователя с обновленным балансом
+          schema:
+            $ref: '#/definitions/internal_user.User'
+        "400":
+          description: Некорректный запрос
+          schema:
+            $ref: '#/definitions/internal_user.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/internal_user.ErrorResponse'
+      summary: Пополнение баланса
+      tags:
+      - balance
+  /balance/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает информацию о балансе пользователя
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Данные пользователя
+          schema:
+            $ref: '#/definitions/internal_user.User'
+        "400":
+          description: Некорректный ID пользователя
+          schema:
+            type: string
+        "404":
+          description: Пользователь не найден
+          schema:
+            type: string
+      summary: Получение баланса
+      tags:
+      - balance
+  /history:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает историю транзакций пользователя с пагинацией и сортировкой
+      parameters:
+      - description: ID пользователя
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      - description: Номер страницы (по умолчанию 1)
+        in: query
+        name: page
+        type: integer
+      - description: Размер страницы (по умолчанию 20)
+        in: query
+        name: page_size
+        type: integer
+      - description: Поле для сортировки (amount/date)
+        in: query
+        name: sort_by
+        type: string
+      - description: Порядок сортировки (asc/desc)
+        in: query
+        name: sort_order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: История транзакций
+          schema:
+            $ref: '#/definitions/internal_history.TransactionHistoryResponse'
+        "400":
+          description: Некорректные параметры
+          schema:
+            type: string
+      summary: История транзакций
+      tags:
+      - history
+  /report:
+    get:
+      consumes:
+      - application/json
+      description: Генерирует CSV отчет по выручке за указанный месяц
+      parameters:
+      - description: 'Год (например: 2024)'
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Месяц (1-12)
+        in: query
+        name: month
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ссылка на отчет
+          schema:
+            $ref: '#/definitions/internal_stat.ReportResponse'
+        "400":
+          description: Некорректные параметры
+          schema:
+            type: string
+      summary: Генерация отчета
+      tags:
+      - reports
+  /reserve:
+    post:
+      consumes:
+      - application/json
+      description: Резервирует средства на балансе пользователя для указанной услуги
+      parameters:
+      - description: Данные для резервирования
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_reservations.ReserveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Результат резервирования
+          schema:
+            $ref: '#/definitions/internal_reservations.ReserveResponse'
+        "400":
+          description: Некорректные данные для резервирования
+          schema:
+            type: string
+      summary: Резервирование средств
+      tags:
+      - reservations
+  /reserve/cancel/{reservation_id}:
+    patch:
+      description: Отменяет ранее созданное резервирование средств
+      parameters:
+      - description: ID резервирования
+        in: path
+        name: reservation_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешная отмена
+          schema:
+            type: string
+        "400":
+          description: Ошибка отмены
+          schema:
+            type: string
+      summary: Отмена резервирования
+      tags:
+      - reservations
+  /reserve/confirm/{reservation_id}:
+    patch:
+      description: Подтверждает ранее созданное резервирование средств
+      parameters:
+      - description: ID резервирования
+        in: path
+        name: reservation_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное подтверждение
+          schema:
+            type: string
+        "400":
+          description: Ошибка подтверждения
+          schema:
+            type: string
+      summary: Подтверждение резервирования
+      tags:
+      - reservations
+  /transfer:
+    post:
+      consumes:
+      - application/json
+      description: Переводит указанную сумму от одного пользователя другому
+      parameters:
+      - description: Данные для перевода
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_user.TransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Результат перевода
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Некорректные данные для перевода
+          schema:
+            type: string
+      summary: Перевод средств
+      tags:
+      - transfer
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового пользователя с начальным балансом 0
+      parameters:
+      - description: Данные для создания пользователя
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_user.UserCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Пользователь создан
+          schema:
+            $ref: '#/definitions/internal_user.User'
+        "400":
+          description: Ошибка создания пользователя
+          schema:
+            $ref: '#/definitions/internal_user.ErrorResponse'
+      summary: Создание пользователя
+      tags:
+      - users
 swagger: "2.0"

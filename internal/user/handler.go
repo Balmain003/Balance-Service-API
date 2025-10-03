@@ -1,3 +1,4 @@
+// internal/user/handler.go
 package user
 
 import (
@@ -9,6 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// UserHandler обработчики пользователей
 type UserHandler struct {
 	UserRepository *UserRepository
 }
@@ -35,8 +37,8 @@ func NewUserHandler(router *http.ServeMux, deps UserHandlerDeps) {
 // @Produce json
 // @Param input body AddBalanceRequest true "Данные для пополнения баланса"
 // @Success 200 {object} User "Данные пользователя с обновленным балансом"
-// @Failure 400 {string} string "Некорректный запрос"
-// @Failure 500 {string} string "Внутренняя ошибка сервера"
+// @Failure 400 {object} ErrorResponse "Некорректный запрос"
+// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
 // @Router /balance [patch]
 func (handler *UserHandler) AddBalance() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -57,6 +59,16 @@ func (handler *UserHandler) AddBalance() http.HandlerFunc {
 	}
 }
 
+// CreateUser создает нового пользователя
+// @Summary Создание пользователя
+// @Description Создает нового пользователя с начальным балансом 0
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param input body UserCreateRequest true "Данные для создания пользователя"
+// @Success 201 {object} User "Пользователь создан"
+// @Failure 400 {object} ErrorResponse "Ошибка создания пользователя"
+// @Router /user [post]
 func (handler *UserHandler) CreateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := req.HandleBody[UserCreateRequest](&w, r)
@@ -66,6 +78,10 @@ func (handler *UserHandler) CreateUser() http.HandlerFunc {
 		user := User{
 			Name:    body.Name,
 			Balance: 0,
+		}
+		if body.Name == "" {
+			http.Error(w, "Имя не должно быть пустым", http.StatusBadRequest)
+			return
 		}
 		if err := handler.UserRepository.Database.DB.Create(&user).Error; err != nil {
 			http.Error(w, "Ошибка создания пользователя", http.StatusBadRequest)
@@ -115,7 +131,7 @@ func (handler *UserHandler) GetUserBalance() http.HandlerFunc {
 // @Tags transfer
 // @Accept json
 // @Produce json
-// @Param input body TransferRequset true "Данные для перевода"
+// @Param input body TransferRequest true "Данные для перевода"
 // @Success 200 {object} map[string]interface{} "Результат перевода"
 // @Failure 400 {string} string "Некорректные данные для перевода"
 // @Router /transfer [post]

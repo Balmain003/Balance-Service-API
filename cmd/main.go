@@ -1,3 +1,4 @@
+// main.go
 package main
 
 import (
@@ -15,6 +16,10 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
+func main() {
+	Server()
+}
+
 // @title Balance Service API
 // @version 1.0
 // @description Микросервис для работы с балансом пользователей
@@ -28,7 +33,8 @@ import (
 
 // @host localhost:8081
 // @BasePath /
-func main() {
+
+func Server() {
 	app := App()
 
 	server := http.Server{
@@ -44,7 +50,6 @@ func main() {
 		fmt.Printf("Server error: %v\n", err)
 	}
 }
-
 func App() http.Handler {
 	conf := config.LoadConfig()
 	db := db.NewDB(conf)
@@ -72,6 +77,18 @@ func App() http.Handler {
 		httpSwagger.DeepLinking(true),
 		httpSwagger.DocExpansion("none"),
 		httpSwagger.DomID("swagger-ui"),
+		httpSwagger.UIConfig(map[string]string{
+			"defaultModelsExpandDepth": "3",
+			"displayRequestDuration":   "true",
+		}),
+		httpSwagger.URL("/swagger/doc.json"), // URL для swagger.json
 	))
+
+	// Serve swagger.json directly
+	router.HandleFunc("GET /swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		http.ServeFile(w, r, "./docs/swagger.json")
+	})
+
 	return router
 }

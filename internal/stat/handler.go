@@ -64,7 +64,7 @@ func (handler *StatHandler) MonthlyReport() http.HandlerFunc {
 		fileName := filepath.Base(reportPath)
 		reportURL := fmt.Sprintf("%s/download/%s", baseURL, fileName)
 
-		res.Json(w, ReportResponese{
+		res.Json(w, ReportResponse{
 			ReportURL: reportURL,
 			Message:   fmt.Sprintf("Отчет за %d-%02d успешно сгенерирован", year, month),
 			FileName:  fileName,
