@@ -4,8 +4,10 @@ module task
 go 1.24.4
 
 require (
+	github.com/go-playground/assert/v2 v2.2.0
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/joho/godotenv v1.5.1
+	github.com/stretchr/testify v1.11.1
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.0
 )
@@ -25,8 +27,6 @@ require (
 	github.com/go-openapi/swag/yamlutils v0.25.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
-	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/mod v0.28.0 // indirect
@@ -46,7 +46,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/swaggo/http-swagger v1.3.4
-	github.com/swaggo/swag v1.16.6 // indirect
+	github.com/swaggo/swag v1.16.6
 	golang.org/x/crypto v0.42.0 // indirect
 	golang.org/x/net v0.44.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
